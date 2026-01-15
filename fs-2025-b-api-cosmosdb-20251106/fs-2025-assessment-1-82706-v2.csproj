@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>fs_2025_b_api_cosmosdb_20251106</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="PostManTests\CosmosDbCollectionOfTests.postman_collection.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.21" />
+    <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.54.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\fs-2025-a-api-demo-002\fs-2025-assessment-1-82706.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="PostManTests\" />
+  </ItemGroup>
+
+</Project>

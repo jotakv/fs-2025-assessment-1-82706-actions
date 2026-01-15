@@ -1,0 +1,613 @@
+{
+	"info": {
+		"_postman_id": "48783127-1d35ab7e-ffe1-4535-a4b0-4280ecfdb64b",
+		"name": "BikesAPI",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "/api/v1/stations",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response is an array of stations\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(Array.isArray(jsonData)).to.be.true;",
+							"    if(jsonData.length > 0) {",
+							"        pm.expect(jsonData[0]).to.have.property(\"number\");",
+							"        pm.expect(jsonData[0]).to.have.property(\"name\");",
+							"        pm.expect(jsonData[0]).to.have.property(\"status\");",
+							"    }",
+							"});"
+						]
+					}
+				}
+			],
+			"id": "48783127-600e78e3-8dc5-4bc4-b5bc-0d6528c1cb5d",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BIKESTATION_URL}}/api/v1/stations",
+					"host": [
+						"{{BIKESTATION_URL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"stations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/api/v1/stations?query&parameters",
+			"id": "48783127-e52e178a-f872-4939-9185-ba7446a42fed",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BIKESTATION_URL}}/api/v1/stations?status=OPEN&minBikes=29",
+					"host": [
+						"{{BIKESTATION_URL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"stations"
+					],
+					"query": [
+						{
+							"key": "status",
+							"value": "OPEN"
+						},
+						{
+							"key": "minBikes",
+							"value": "29"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/api/v2/stations",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response is an array of stations (v2)\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(Array.isArray(jsonData)).to.be.true;",
+							"    if(jsonData.length > 0) {",
+							"        pm.expect(jsonData[0]).to.have.property(\"id\");",
+							"        pm.expect(jsonData[0]).to.have.property(\"name\");",
+							"        pm.expect(jsonData[0]).to.have.property(\"status\");",
+							"    }",
+							"});"
+						]
+					}
+				}
+			],
+			"id": "48783127-6b8feba0-58b3-459a-afd4-ba9dd79c0a62",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BIKESTATION_COSMOS_URL}}/api/v2/stations?page=1&pageSize=100",
+					"host": [
+						"{{BIKESTATION_COSMOS_URL}}"
+					],
+					"path": [
+						"api",
+						"v2",
+						"stations"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "pageSize",
+							"value": "100"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/api/v1/stations/{number}",
+			"event": [
+				{
+					"id": "1b50f3dc-a31e-4f6e-8c42-f02ba70c3f55",
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response is a station object\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an(\"object\");",
+							"    pm.expect(jsonData).to.have.property(\"number\");",
+							"    pm.expect(jsonData).to.have.property(\"name\");",
+							"    pm.expect(jsonData).to.have.property(\"status\");",
+							"});"
+						]
+					}
+				}
+			],
+			"id": "48783127-5ae12685-6a49-4970-a16d-d9b9fcef9a35",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BIKESTATION_URL}}/api/v1/stations/42",
+					"host": [
+						"{{BIKESTATION_URL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"stations",
+						"42"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/api/v2/stations{number}",
+			"event": [
+				{
+					"id": "b5a0b602-7944-4d6b-99bf-786896abad25",
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response is a station object (v2)\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an(\"object\");",
+							"    pm.expect(jsonData).to.have.property(\"id\");",
+							"    pm.expect(jsonData).to.have.property(\"name\");",
+							"    pm.expect(jsonData).to.have.property(\"status\");",
+							"});"
+						]
+					}
+				}
+			],
+			"id": "48783127-b8b5921a-93d9-4eb2-a5de-dc685939400c",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BIKESTATION_COSMOS_URL}}/api/v2/stations/42",
+					"host": [
+						"{{BIKESTATION_COSMOS_URL}}"
+					],
+					"path": [
+						"api",
+						"v2",
+						"stations",
+						"42"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/api/v1/stations/summary",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains summary fields\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an(\"object\");",
+							"    pm.expect(jsonData).to.have.property(\"totalStations\");",
+							"    pm.expect(jsonData).to.have.property(\"openStations\");",
+							"    pm.expect(jsonData).to.have.property(\"closedStations\");",
+							"});"
+						]
+					}
+				}
+			],
+			"id": "48783127-3b7f08cd-1ae9-4e2b-93f2-45c66faa9fe0",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BIKESTATION_URL}}/api/v1/stations/summary",
+					"host": [
+						"{{BIKESTATION_URL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"stations",
+						"summary"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/api/v2/stations/summary",
+			"event": [
+				{
+					"id": "8237e47c-ecd6-47ad-848e-76ccffb72823",
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains summary fields (v2)\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an(\"object\");",
+							"    pm.expect(jsonData).to.have.property(\"totalStations\");",
+							"    pm.expect(jsonData).to.have.property(\"openStations\");",
+							"    pm.expect(jsonData).to.have.property(\"closedStations\");",
+							"});"
+						]
+					}
+				}
+			],
+			"id": "48783127-c47e4ee6-310c-4fcb-a65e-bdcca5a50386",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BIKESTATION_COSMOS_URL}}/api/v2/stations/summary",
+					"host": [
+						"{{BIKESTATION_COSMOS_URL}}"
+					],
+					"path": [
+						"api",
+						"v2",
+						"stations",
+						"summary"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/api/v2/stations/stations?status=OPEN&minBikes=29",
+			"event": [
+				{
+					"id": "8237e47c-ecd6-47ad-848e-76ccffb72823",
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains summary fields (v2)\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an(\"object\");",
+							"    pm.expect(jsonData).to.have.property(\"totalStations\");",
+							"    pm.expect(jsonData).to.have.property(\"openStations\");",
+							"    pm.expect(jsonData).to.have.property(\"closedStations\");",
+							"});"
+						]
+					}
+				}
+			],
+			"id": "48783127-b19c2d3c-c1b9-4887-80d0-97e1afe5c0c9",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BIKESTATION_COSMOS_URL}}/api/v2/stations/summary",
+					"host": [
+						"{{BIKESTATION_COSMOS_URL}}"
+					],
+					"path": [
+						"api",
+						"v2",
+						"stations",
+						"summary"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create station",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "aaaef346-186e-435e-a7dd-14b785adb038",
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response contains created station\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an(\"object\");",
+							"    pm.expect(jsonData).to.have.property(\"number\");",
+							"    pm.expect(jsonData).to.have.property(\"name\");",
+							"    pm.expect(jsonData).to.have.property(\"status\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"id": "48783127-aa4a2eb3-1b68-4fcd-8a69-30cdc073e32c",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"number\": 118,\n  \"name\": \"API Test\",\n  \"address\": \"Virtual Street\",\n  \"latitude\": 53.35,\n  \"longitude\": -6.26,\n  \"bikeStands\": 20,\n  \"availableBikes\": 10,\n  \"status\": \"OPEN\"\n}"
+				},
+				"url": {
+					"raw": "{{BIKESTATION_URL}}/api/v1/stations",
+					"host": [
+						"{{BIKESTATION_URL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"stations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create station v2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "aaaef346-186e-435e-a7dd-14b785adb038",
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response contains created station\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an(\"object\");",
+							"    pm.expect(jsonData).to.have.property(\"number\");",
+							"    pm.expect(jsonData).to.have.property(\"name\");",
+							"    pm.expect(jsonData).to.have.property(\"status\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"id": "48783127-4d0a968d-7361-45cf-9dac-b270a7918778",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"number\": 121,\n  \"contract_name\": \"dublin\",\n  \"name\": \"API Test Station 121\",\n  \"address\": \"Virtual Street 121\",\n  \"position\": {\n    \"lat\": 53.35,\n    \"lng\": -6.26\n  },\n  \"banking\": false,\n  \"bonus\": false,\n  \"bike_stands\": 20,\n  \"available_bike_stands\": 10,\n  \"available_bikes\": 10,\n  \"status\": \"OPEN\",\n  \"last_update\": 1763898810822\n}\n"
+				},
+				"url": {
+					"raw": "{{BIKESTATION_COSMOS_URL}}/api/v2/stations",
+					"host": [
+						"{{BIKESTATION_COSMOS_URL}}"
+					],
+					"path": [
+						"api",
+						"v2",
+						"stations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update station",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "294e8aca-4da4-4079-961d-119621ef2b34",
+						"exec": [
+							"pm.test(\"Status code is 200 or 204\", function () {",
+							"    pm.expect([200,204]).to.include(pm.response.code);",
+							"});",
+							"",
+							"pm.test(\"Response contains updated station or is empty\", function () {",
+							"    if(pm.response.code === 200) {",
+							"        var jsonData = pm.response.json();",
+							"        pm.expect(jsonData).to.be.an(\"object\");",
+							"        pm.expect(jsonData).to.have.property(\"number\");",
+							"        pm.expect(jsonData).to.have.property(\"name\");",
+							"        pm.expect(jsonData).to.have.property(\"status\");",
+							"    } else {",
+							"        pm.expect(pm.response.text()).to.be.oneOf([\"\", null]);",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"id": "48783127-c854e800-9fec-4eb5-9f96-7b606d22bb5b",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"number\": 118,\n  \"name\": \"API Test Updated\",\n  \"address\": \"Virtual Street 1\",\n  \"latitude\": 53.35,\n  \"longitude\": -6.26,\n  \"bikeStands\": 25,\n  \"availableBikes\": 5,\n  \"status\": \"OPEN\"\n}"
+				},
+				"url": {
+					"raw": "{{BIKESTATION_URL}}/api/v1/stations/9999",
+					"host": [
+						"{{BIKESTATION_URL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"stations",
+						"9999"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update station v2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "294e8aca-4da4-4079-961d-119621ef2b34",
+						"exec": [
+							"pm.test(\"Status code is 200 or 204\", function () {",
+							"    pm.expect([200,204]).to.include(pm.response.code);",
+							"});",
+							"",
+							"pm.test(\"Response contains updated station or is empty\", function () {",
+							"    if(pm.response.code === 200) {",
+							"        var jsonData = pm.response.json();",
+							"        pm.expect(jsonData).to.be.an(\"object\");",
+							"        pm.expect(jsonData).to.have.property(\"number\");",
+							"        pm.expect(jsonData).to.have.property(\"name\");",
+							"        pm.expect(jsonData).to.have.property(\"status\");",
+							"    } else {",
+							"        pm.expect(pm.response.text()).to.be.oneOf([\"\", null]);",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"id": "48783127-e11250d8-5c53-4dba-bfb6-765a235eed0a",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"number\": 118,\n  \"contract_name\": \"dublin\",\n  \"name\": \"API Test Station 118 Updated\",\n  \"address\": \"Virtual Street 118 Updated\",\n  \"position\": {\n    \"lat\": 53.35,\n    \"lng\": -6.26\n  },\n  \"banking\": false,\n  \"bonus\": false,\n  \"bike_stands\": 20,\n  \"available_bike_stands\": 10,\n  \"available_bikes\": 10,\n  \"status\": \"OPEN\",\n  \"last_update\": 1763898810822\n}\n"
+				},
+				"url": {
+					"raw": "{{BIKESTATION_COSMOS_URL}}/api/v2/stations/118",
+					"host": [
+						"{{BIKESTATION_COSMOS_URL}}"
+					],
+					"path": [
+						"api",
+						"v2",
+						"stations",
+						"118"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "createdStationNumber",
+			"value": ""
+		}
+	]
+}

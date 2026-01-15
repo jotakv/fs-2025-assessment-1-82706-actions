@@ -1,0 +1,501 @@
+@page "/stations"
+@rendermode InteractiveServer
+@inject StationsApiClient ApiClient
+
+<PageTitle>Stations</PageTitle>
+
+<h1>Stations</h1>
+<p class="text-muted">This page talks to the DublinBikes V2 API and shows a very simple master/detail view.</p>
+
+@if (!string.IsNullOrWhiteSpace(infoMessage))
+{
+    <div class="alert alert-success" role="alert">@infoMessage</div>
+}
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+
+<div class="row mb-3">
+    <div class="col-12 col-md-8">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h2 class="h5">Search and Filters</h2>
+                <div class="row g-2 align-items-end">
+                    <div class="col-sm-4">
+                        <label for="searchBox" class="form-label">Search by name or address</label>
+                        <input id="searchBox" class="form-control" @bind="searchText" placeholder="Type station name" />
+                    </div>
+                    <div class="col-sm-3">
+                        <label for="statusSelect" class="form-label">Status</label>
+                        <select id="statusSelect" class="form-select" @bind="selectedStatus">
+                            <option value="All">All</option>
+                            <option value="OPEN">OPEN</option>
+                            <option value="CLOSED">CLOSED</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-3">
+                        <label for="minBikes" class="form-label">Min available bikes</label>
+                        <InputNumber id="minBikes" class="form-control" @bind-Value="minAvailableBikes" />
+                    </div>
+                    <div class="col-sm-2 d-flex gap-1">
+                        <button type="button" class="btn btn-primary w-100" @onclick="ApplyFilters">Apply</button>
+                        <button type="button" class="btn btn-secondary w-100" @onclick="ClearFilters">Clear</button>
+                    </div>
+                </div>
+                <div class="row g-2 align-items-end mt-2">
+                    <div class="col-sm-4">
+                        <label for="sortField" class="form-label">Sort by</label>
+                        <select id="sortField" class="form-select" @bind="sortField" @bind:after="OnSortChanged">
+                            <option value="name">Name</option>
+                            <option value="available_bikes">Available bikes</option>
+                            <option value="occupancy">Occupancy</option>
+                        </select>
+
+                    </div>
+                    <div class="col-sm-3">
+                        <label class="form-label">Direction</label>
+                        <div>
+                            <button type="button" class="btn btn-outline-primary" @onclick="ToggleDirection">@sortDirection.ToUpper()</button>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <label for="pageSize" class="form-label">Page size</label>
+                        <InputNumber id="pageSize" class="form-control" @bind-Value="pageSize" />
+                    </div>
+                    <div class="col-sm-2">
+                        <label class="form-label">Page</label>
+                        <div class="d-flex gap-1">
+                            <button type="button" class="btn btn-outline-secondary" @onclick="PrevPage" disabled="@(currentPage <= 1)">Prev</button>
+                            <button type="button" class="btn btn-outline-secondary" @onclick="NextPage">Next</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (summary != null)
+        {
+            <div class="alert alert-info" role="status">
+                <div class="d-flex flex-wrap gap-3">
+                    <div><strong>Total stations:</strong> @summary.TotalStations</div>
+                    <div><strong>Bike stands:</strong> @summary.TotalBikeStands</div>
+                    <div><strong>Available bikes:</strong> @summary.TotalAvailableBikes</div>
+                    <div><strong>Open:</strong> @summary.OpenStations</div>
+                    <div><strong>Closed:</strong> @summary.ClosedStations</div>
+                </div>
+            </div>
+        }
+
+        <div class="card">
+            <div class="card-body">
+                <h2 class="h5">Stations list</h2>
+                @if (isLoading)
+                {
+                    <p>Loading stations...</p>
+                }
+                else if (!string.IsNullOrWhiteSpace(listError))
+                {
+                    <div class="alert alert-danger">@listError</div>
+                }
+                else if (stations.Count == 0)
+                {
+                    <p>No stations found.</p>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Address</th>
+                                    <th>Status</th>
+                                    <th>Available / Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var station in stations)
+                                {
+                                    <tr class="@(selectedStation != null && selectedStation.number == station.number ? "table-primary" : string.Empty)" @onclick="(() => SelectStation(station))" style="cursor:pointer">
+                                        <td>@station.name</td>
+                                        <td>@station.address</td>
+                                        <td>
+                                            <span class="badge @(station.status.Equals("OPEN", StringComparison.OrdinalIgnoreCase) ? "bg-success" : "bg-danger")">@station.status</span>
+                                        </td>
+                                        <td>@station.available_bikes / @station.bike_stands</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>Page @currentPage</div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-outline-secondary" @onclick="PrevPage" disabled="@(currentPage <= 1)">Previous</button>
+                            <button type="button" class="btn btn-outline-secondary" @onclick="NextPage">Next</button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h2 class="h5">Station detail</h2>
+                @if (selectedStation == null)
+                {
+                    <p>Select a station to see the details.</p>
+                }
+                else
+                {
+                    <div>
+                        <h3 class="h5">@selectedStation.name</h3>
+                        <p>@selectedStation.address</p>
+                        <p>Status: <span class="badge @(selectedStation.status.Equals("OPEN", StringComparison.OrdinalIgnoreCase) ? "bg-success" : "bg-danger")">@selectedStation.status</span></p>
+                        <p>Bikes: @selectedStation.available_bikes / @selectedStation.bike_stands</p>
+                        <p>Bike stands free: @selectedStation.available_bike_stands</p>
+                        <div class="mb-2">
+                            <label class="form-label">Occupancy</label>
+                            <div class="progress" style="height:24px;">
+                                <div class="progress-bar" role="progressbar" style="width:@selectedStation.OccupancyPercent()%;">@selectedStation.OccupancyPercent()%</div>
+                            </div>
+                            <small>@selectedStation.available_bikes bikes in use from @selectedStation.bike_stands stands</small>
+                        </div>
+                        <p>Last update: @selectedStation.lastUpdateDublin.ToString("g")</p>
+                        <p>Coordinates: Lat @selectedStation.GetLatitude(), Lng @selectedStation.GetLongitude()</p>
+                        <a target="_blank" href="https://maps.google.com/?q=@selectedStation.GetLatitude(),@selectedStation.GetLongitude()">Open in Maps</a>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <h2 class="h5">Edit selected station</h2>
+                @if (selectedStation == null)
+                {
+                    <p>Choose a station first.</p>
+                }
+                else
+                {
+                    <div class="mb-2">
+                        <label class="form-label" for="editName">Name</label>
+                        <input id="editName" class="form-control" @bind="editStation.name" />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label" for="editAddress">Address</label>
+                        <input id="editAddress" class="form-control" @bind="editStation.address" />
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label" for="editStatus">Status</label>
+                            <select id="editStatus" class="form-select" @bind="editStation.status">
+                                <option value="OPEN">OPEN</option>
+                                <option value="CLOSED">CLOSED</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label" for="editNumber">Number</label>
+                            <InputNumber id="editNumber" class="form-control" @bind-Value="editStation.number" />
+                        </div>
+                    </div>
+                    <div class="row g-2 mt-2">
+                        <div class="col-4">
+                            <label class="form-label" for="editStands">Bike stands</label>
+                            <InputNumber id="editStands" class="form-control" @bind-Value="editStation.bike_stands" />
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label" for="editBikes">Available bikes</label>
+                            <InputNumber id="editBikes" class="form-control" @bind-Value="editStation.available_bikes" />
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label" for="editFree">Free stands</label>
+                            <InputNumber id="editFree" class="form-control" @bind-Value="editStation.available_bike_stands" />
+                        </div>
+                    </div>
+                    <div class="mt-3 d-flex gap-2">
+                        <button type="button" class="btn btn-primary" @onclick="UpdateSelected">Update</button>
+                        <button type="button" class="btn btn-danger" @onclick="DeleteSelected">Delete</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-body">
+        <h2 class="h5">Create new station</h2>
+        <p class="text-muted">Fill the fields and click save. Very small validation happens in the code.</p>
+        <div class="row g-2">
+            <div class="col-sm-4">
+                <label class="form-label" for="newNumber">Number</label>
+                <InputNumber id="newNumber" class="form-control" @bind-Value="newStation.number" />
+            </div>
+            <div class="col-sm-4">
+                <label class="form-label" for="newName">Name</label>
+                <input id="newName" class="form-control" @bind="newStation.name" />
+            </div>
+            <div class="col-sm-4">
+                <label class="form-label" for="newAddress">Address</label>
+                <input id="newAddress" class="form-control" @bind="newStation.address" />
+            </div>
+        </div>
+        <div class="row g-2 mt-2">
+            <div class="col-sm-4">
+                <label class="form-label" for="newStatus">Status</label>
+                <select id="newStatus" class="form-select" @bind="newStation.status">
+                    <option value="OPEN">OPEN</option>
+                    <option value="CLOSED">CLOSED</option>
+                </select>
+            </div>
+            <div class="col-sm-4">
+                <label class="form-label" for="newStands">Bike stands</label>
+                <InputNumber id="newStands" class="form-control" @bind-Value="newStation.bike_stands" />
+            </div>
+            <div class="col-sm-4">
+                <label class="form-label" for="newBikes">Available bikes</label>
+                <InputNumber id="newBikes" class="form-control" @bind-Value="newStation.available_bikes" />
+            </div>
+        </div>
+        <div class="row g-2 mt-2">
+            <div class="col-sm-4">
+                <label class="form-label" for="newFree">Free stands</label>
+                <InputNumber id="newFree" class="form-control" @bind-Value="newStation.available_bike_stands" />
+            </div>
+            <div class="col-sm-4">
+                <label class="form-label" for="newLat">Latitude</label>
+                <InputNumber id="newLat" class="form-control" @bind-Value="newStation.lat" />
+            </div>
+            <div class="col-sm-4">
+                <label class="form-label" for="newLng">Longitude</label>
+                <InputNumber id="newLng" class="form-control" @bind-Value="newStation.lng" />
+            </div>
+        </div>
+        <button type="button" class="btn btn-success mt-3" @onclick="SaveNewStation">Save new station</button>
+    </div>
+</div>
+
+@code {
+    // List data and states
+    private List<StationDto> stations = new();
+    private StationsSummaryDto? summary;
+    private StationDto? selectedStation;
+    private StationDto editStation = new StationDto();
+    private StationDto newStation = new StationDto();
+
+    // Filters and sorting
+    private string searchText = string.Empty;
+    private string selectedStatus = "OPEN";
+    private int? minAvailableBikes = null;
+    private string sortField = "name";
+    private string sortDirection = "asc";
+    private int currentPage = 1;
+    private int pageSize = 100;
+
+    // Messages and flags
+    private bool isLoading = false;
+    private string listError = string.Empty;
+    private string errorMessage = string.Empty;
+    private string infoMessage = string.Empty;
+
+    // Load first data
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSummary();
+        await LoadStations();
+    }
+
+    // Load stations from the API with the selected filters
+    private async Task LoadStations()
+    {
+        isLoading = true;
+        listError = string.Empty;
+        StateHasChanged();
+        var data = await ApiClient.GetStationsAsync(selectedStatus, minAvailableBikes, searchText, sortField, sortDirection, currentPage, pageSize);
+        if (!string.IsNullOrWhiteSpace(ApiClient.LastErrorMessage))
+        {
+            listError = ApiClient.LastErrorMessage;
+        }
+        stations = data;
+        if (stations.Count > 0 && (selectedStation == null || !stations.Any(s => s.number == selectedStation.number)))
+        {
+            selectedStation = stations.First();
+            CopySelectedToEdit();
+        }
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    // Load simple summary
+    private async Task LoadSummary()
+    {
+        summary = await ApiClient.GetSummaryAsync();
+        if (!string.IsNullOrWhiteSpace(ApiClient.LastErrorMessage))
+        {
+            errorMessage = ApiClient.LastErrorMessage;
+        }
+    }
+
+    // User clicks apply filters
+    private async Task ApplyFilters()
+    {
+        Console.WriteLine("ApplyFilters clicked");
+        currentPage = 1;
+        await LoadStations();
+    }
+
+    // Clear filters to defaults
+    private async Task ClearFilters()
+    {
+        Console.WriteLine("ClearFilters clicked");
+        searchText = string.Empty;
+        selectedStatus = "All";
+        minAvailableBikes = null;
+        sortField = "name";
+        sortDirection = "asc";
+        currentPage = 1;
+        pageSize = 10;
+        await LoadStations();
+    }
+
+    // Change sort and reload
+    private async Task OnSortChanged()
+    {
+        currentPage = 1;
+        await LoadStations();
+    }
+
+    // Toggle sort direction
+    private async Task ToggleDirection()
+    {
+        sortDirection = sortDirection == "asc" ? "desc" : "asc";
+        await LoadStations();
+    }
+
+    // Go to next page
+    private async Task NextPage()
+    {
+        currentPage++;
+        await LoadStations();
+    }
+
+    // Go to previous page
+    private async Task PrevPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            await LoadStations();
+        }
+    }
+
+    // Set selected station and fill edit form
+    private void SelectStation(StationDto station)
+    {
+        selectedStation = station;
+        CopySelectedToEdit();
+    }
+
+    // Copy selected station values to the edit object
+    private void CopySelectedToEdit()
+    {
+        if (selectedStation == null)
+        {
+            editStation = new StationDto();
+            return;
+        }
+        editStation = new StationDto
+        {
+            number = selectedStation.number,
+            name = selectedStation.name,
+            address = selectedStation.address,
+            status = selectedStation.status,
+            bike_stands = selectedStation.bike_stands,
+            available_bikes = selectedStation.available_bikes,
+            available_bike_stands = selectedStation.available_bike_stands,
+            lat = selectedStation.GetLatitude(),
+            lng = selectedStation.GetLongitude(),
+            contract_name = selectedStation.contract_name,
+            banking = selectedStation.banking,
+            bonus = selectedStation.bonus,
+            last_update = selectedStation.last_update,
+            occupancy = selectedStation.occupancy,
+            position = new PositionDto { lat = selectedStation.GetLatitude(), lng = selectedStation.GetLongitude() }
+        };
+    }
+
+    // Save a new station with basic checks
+    private async Task SaveNewStation()
+    {
+        infoMessage = string.Empty;
+        errorMessage = string.Empty;
+        if (newStation.number <= 0 || string.IsNullOrWhiteSpace(newStation.name) || string.IsNullOrWhiteSpace(newStation.address))
+        {
+            errorMessage = "Please fill number, name and address.";
+            return;
+        }
+        var success = await ApiClient.CreateStationAsync(newStation);
+        if (success)
+        {
+            infoMessage = "Station created";
+            newStation = new StationDto();
+            await LoadStations();
+            await LoadSummary();
+        }
+        else
+        {
+            errorMessage = string.IsNullOrWhiteSpace(ApiClient.LastErrorMessage) ? "Could not create station" : ApiClient.LastErrorMessage;
+        }
+    }
+
+    // Update the selected station
+    private async Task UpdateSelected()
+    {
+        infoMessage = string.Empty;
+        errorMessage = string.Empty;
+        if (selectedStation == null)
+        {
+            errorMessage = "Select a station first";
+            return;
+        }
+        var success = await ApiClient.UpdateStationAsync(selectedStation.number, editStation);
+        if (success)
+        {
+            infoMessage = "Station updated";
+            await LoadStations();
+            await LoadSummary();
+        }
+        else
+        {
+            errorMessage = string.IsNullOrWhiteSpace(ApiClient.LastErrorMessage) ? "Could not update station" : ApiClient.LastErrorMessage;
+        }
+    }
+
+    // Delete the selected station
+    private async Task DeleteSelected()
+    {
+        infoMessage = string.Empty;
+        errorMessage = string.Empty;
+        if (selectedStation == null)
+        {
+            errorMessage = "Select a station first";
+            return;
+        }
+        var success = await ApiClient.DeleteStationAsync(selectedStation.number);
+        if (success)
+        {
+            infoMessage = "Station deleted";
+            selectedStation = null;
+            await LoadStations();
+            await LoadSummary();
+        }
+        else
+        {
+            errorMessage = string.IsNullOrWhiteSpace(ApiClient.LastErrorMessage) ? "Could not delete station" : ApiClient.LastErrorMessage;
+        }
+    }
+}
